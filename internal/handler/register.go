@@ -7,4 +7,5 @@ import (
 
 func RegisterHandlers(mux *http.ServeMux, logger *slog.Logger) {
 	mux.HandleFunc("GET /", index(logger))
+	mux.Handle("/static/", http.FileServer(http.Dir("static")))
 }
