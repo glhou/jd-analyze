@@ -4,7 +4,7 @@
   bin = "./tmp/main"
   include_ext = ["go", "templ"]
   exclude_dir = ["tmp", "vendor"]
-  exclude_regex = ["._templ\\.go"]
+  exclude_regex = [".*_templ\\.go"]
 
 [log]
   main_only = true

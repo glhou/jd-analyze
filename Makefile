@@ -1,4 +1,4 @@
-.PHONY: dev generate build
+.PHONY: dev generate
 
 dev:
 	air
