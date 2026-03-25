@@ -9,7 +9,11 @@ import (
 
 func index(logger *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		logger.Info("Getting index page")
-		views.Index().Render(r.Context(), w)
+		if err := views.Index().Render(r.Context(), w); err != nil {
+			logger.Error("failed to render index page",
+				slog.Any("err", err))
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
 	}
 }
