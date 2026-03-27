@@ -1,9 +1,159 @@
 package views
 
+import "fmt"
+import "strings"
+
+templ CloseSVG() {
+	<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+		<path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"></path>
+	</svg>
+}
+
+templ MiniCloseSVG() {
+	<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5">
+		<path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z"></path>
+	</svg>
+}
+
+templ MiniCheveronSVG() {
+	<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5">
+		<path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"></path>
+	</svg>
+}
+
+templ TagInput(name string, tagListName string) {
+	{{ id := strings.ReplaceAll(name, " ", "-") }}
+	{{ displayName := strings.ToTitle(name) }}
+	<div
+		class="w-full"
+		x-data={ fmt.Sprintf(`{
+      newTag: '',
+      addTag() {
+        if (this.newTag.trim() !== '') {
+          %s.push(this.newTag.trim());
+          this.newTag = '';
+        }
+      },
+      removeTag(index) {
+        %s.splice(index, 1);
+      }
+    }`, tagListName, tagListName) }
+	>
+		<label for={ id }>{ displayName }</label>
+		<div class="flex flex-wrap border-2 border-grey-300 p-2 rounded-md focus-within:border-blue-300">
+			<template x-for={ fmt.Sprintf("(tag, index) in %s", tagListName) } :key="index">
+				<div class="inline-flex bg-red-300 border-1 -border-red-500 rounded-md flex-shrink-0 p-1 ml-1">
+					<span x-text="tag"></span>
+					<button @click="removeTag(index)" class="ml-1">
+						@MiniCloseSVG()
+					</button>
+				</div>
+			</template>
+			<input
+				id={ id }
+				class="ml-2 outline-none inline-flex flex-grow bg-transparent"
+				x-model="newTag"
+				@keydown.enter.prevent="addTag()"
+				type="text"
+				placeholder={ "Add more " + displayName }
+			/>
+		</div>
+	</div>
+}
+
+templ MultiSelect(name string, alpineData string, alpineOptionsList string) {
+	{{ id := strings.ReplaceAll(name, " ", "-") }}
+	{{ displayName := strings.ToTitle(name) }}
+	<div
+		class="w-full"
+		x-data={ fmt.Sprintf(`{
+          isSelectOpen: false,
+          addToList(option) {
+            if (!%s.includes(option)){
+              %s.push(option);
+              this.closeSelect();
+            }
+          },
+          removeOption(index) {
+            %s.splice(index, 1);
+          },
+          openSelect() {
+            this.isSelectOpen = true;
+          },
+          closeSelect() {
+            this.isSelectOpen = false;
+          }
+        }`,alpineData, alpineData, alpineData) }
+		@click.away="closeSelect()"
+	>
+		<label for={ id }>{ displayName }</label>
+		<div class="cursor-pointer flex flex-row border-2 border-grey-300 p-2 rounded-md focus-within:border-blue-300" @click="openSelect()">
+			<input disabled class="ml-1 cursor-pointer" x-show={ alpineData + ".length === 0" } placeholder={ "Select a " + displayName }/>
+			<template x-for={ fmt.Sprintf("(option, index) in %s", alpineData) } :key="index">
+				<div class="inline-flex bg-red-300 border-1 -border-red-500 rounded-md flex-shrink-0 p-1 ml-1">
+					<span x-text="option"></span>
+					<button @click="removeOption(index)" class="ml-1">
+						@MiniCloseSVG()
+					</button>
+				</div>
+			</template>
+			<button type="button" class="ml-auto">
+				@MiniCheveronSVG()
+			</button>
+		</div>
+		<div
+			x-show="isSelectOpen"
+			id={ id }
+			class="flex flex-col z-10 mt-1 bg-white border border-gray-300 rounded-md shadow-lg focus:outline-none"
+			@change="addToList($event.target.value)"
+			autocomplete="off"
+		>
+			<template x-for={ "option in " + alpineOptionsList }>
+				<div
+					class="px-4 py-2 hover:bg-blue-50 cursor-pointer transition-colors duration-150
+             focus:outline-none focus:bg-blue-100 active:bg-blue-200
+             aria-selected:false:hover:bg-blue-50 aria-selected:true:bg-blue-300"
+					@click="addToList(option)"
+					x-text="option"
+				></div>
+			</template>
+		</div>
+	</div>
+}
+
+templ Input(name string, type_name string, alpineData string) {
+	{{ id := strings.ReplaceAll(name, " ", "-") }}
+	{{ displayName := strings.ToTitle(name) }}
+	<div class="w-full">
+		<label for={ id }>{ displayName }</label>
+		<input class="flex flex-row border-2 border-grey-300 rounded-md p-2 bg-transparent focus:border-blue-300 outline-none" id={ id } x-model={ alpineData } type={ type_name } placeholder={ displayName }/>
+	</div>
+}
+
 templ Index() {
 	@Layout("JD Analyzer") {
-		<main class="max-w-2xl mx-auto px-4 py-16">
+		<main
+			class="max-w-2xl mx-auto px-4 py-16"
+			x-data="{
+        localisations: ['Remote', 'Hybrid', 'On-site'],
+        userData: {
+          skills: [],
+          yearsOfExperience: 0,
+          role: '',
+          softSkillKeywords: [],
+          localisation: [],
+        }
+      }"
+		>
 			<h1 class="text-3xl font-bold mb-2">JD Analyzer</h1>
+			<div class="">
+				<h3>User skills keywords</h3>
+				@TagInput("skills", "userData.skills")
+				@TagInput("soft skills", "userData.softSkillKeywords")
+				@MultiSelect("localisation", "userData.localisation", "localisations")
+				@Input("years of experience", "number", "userData.yearsOfExperience")
+				@Input("role", "text", "userData.role")
+			</div>
 			<p class="text-gray-500 mb-8">Paste a job description and your profile to get a match score.</p>
 		</main>
 	}
