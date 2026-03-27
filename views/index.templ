@@ -147,8 +147,22 @@ templ Index() {
           role: '',
           softSkillKeywords: [],
           localisation: [],
-        }
+        },
         jobDescription: '',
+        sendData() {
+          fetch('/analyze', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                userData: this.userData,
+                jobDescription: this.jobDescription,
+              })
+          }).then(response => response.json())
+          .then(data => console.log('Success:', data))
+          .catch(error => console.error('Error:', error));
+        }
       }"
 		>
 			<h1 class="text-5xl font-bold mb-2">JD Analyzer</h1>
@@ -162,8 +176,9 @@ templ Index() {
 			</div>
 			<div>
 				<h2 class="text-2xl mb-1">Paste the job description</h2>
-				@Input("job description", "textarea", "userData.jobDescription")
+				@Input("job description", "textarea", "jobDescription")
 			</div>
+			<button @click="sendData()">Start analyzing</button>
 			<div>
 				<h2 class="text-2xl mb-1">Matching result</h2>
 			</div>
